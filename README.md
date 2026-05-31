@@ -25,7 +25,6 @@ This repo starts with a minimal Python desktop MVP:
 - cursor-following overlay window
 - global shortcut ask flow
 - fixed answer popup
-- visible ask/quit control panel
 - provider abstraction for future OpenAI / Anthropic / other APIs
 - screen capture service
 - docs for roadmap and architecture
@@ -63,7 +62,7 @@ python -m mouseagent
 
 Press `Ctrl+Space` to ask a question. The current MVP captures the screen and returns a mock answer in a fixed popup, which proves the desktop flow before real AI providers are added.
 
-MouseAgent also shows a small control panel with `Ask` and `Quit`. If your system tray is visible, the tray icon also has ask and quit actions.
+The answer popup includes `Ask again`, `Hide`, and `Quit`. If your system tray is visible, the tray icon also has ask and quit actions.
 
 ## Repository Layout
 
@@ -81,6 +80,7 @@ docs/
   ROADMAP.md              # Build plan and milestones
   ARCHITECTURE.md         # System design notes
   PRODUCT.md              # Product direction and user experience
+  REQUIREMENTS.md         # MVP requirements and constraints
 ```
 
 ## Important Principle
