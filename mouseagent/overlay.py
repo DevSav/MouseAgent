@@ -57,6 +57,17 @@ QComboBox {
     border-radius: 10px;
     padding: 8px 10px;
 }
+QComboBox QAbstractItemView {
+    background: #061426;
+    color: #f8fbff;
+    border: 1px solid rgba(48, 230, 255, 120);
+    selection-background-color: rgba(48, 230, 255, 70);
+    selection-color: #ffffff;
+}
+QComboBox::drop-down {
+    border: 0;
+    width: 24px;
+}
 QLineEdit {
     background: rgba(4, 12, 24, 220);
     color: #f8fbff;
@@ -92,22 +103,7 @@ class CursorOverlay(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.setFixedSize(88, 32)
-
-        self.message = QLabel("Ready", self)
-        self.message.setGeometry(31, 5, 52, 22)
-        self.message.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.message.setStyleSheet(
-            """
-            QLabel {
-                color: #dffbff;
-                background: rgba(4, 12, 24, 176);
-                border: 1px solid rgba(48, 230, 255, 82);
-                border-radius: 11px;
-                font-size: 10px;
-            }
-            """
-        )
+        self.setFixedSize(34, 34)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.follow_cursor)
@@ -117,7 +113,6 @@ class CursorOverlay(QWidget):
         self.move(QCursor.pos() + QPoint(16, 16))
 
     def show_message(self, text: str) -> None:
-        self.message.setText(text)
         self.show()
 
     def paintEvent(self, _event) -> None:  # noqa: N802
@@ -125,12 +120,12 @@ class CursorOverlay(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(Qt.PenStyle.NoPen)
 
-        painter.setBrush(QColor(48, 230, 255, 56))
-        painter.drawEllipse(2, 2, 28, 28)
+        painter.setBrush(QColor(48, 230, 255, 42))
+        painter.drawEllipse(1, 1, 32, 32)
         painter.setBrush(QColor(48, 230, 255))
-        painter.drawEllipse(8, 8, 16, 16)
+        painter.drawEllipse(8, 8, 18, 18)
         painter.setBrush(QColor(120, 255, 214))
-        painter.drawEllipse(13, 13, 6, 6)
+        painter.drawEllipse(14, 14, 6, 6)
 
 
 class QuestionDialog(QDialog):
@@ -262,11 +257,18 @@ class SettingsDialog(QDialog):
         self.gemini_api_key.setPlaceholderText("Gemini API key")
 
         self.gemini_model = QLineEdit(settings.gemini_model)
+        self.gemini_model.setPlaceholderText("gemini-2.5-flash")
         self.ollama_url = QLineEdit(settings.ollama_url)
+        self.ollama_url.setPlaceholderText("http://localhost:11434")
         self.ollama_model = QLineEdit(settings.ollama_model)
+        self.ollama_model.setPlaceholderText("llama3.2-vision")
 
         form = QFormLayout()
         form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        form.setFormAlignment(Qt.AlignmentFlag.AlignLeft)
+        form.setHorizontalSpacing(14)
+        form.setVerticalSpacing(10)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         form.addRow("Provider", self.provider)
         form.addRow("Gemini key", self.gemini_api_key)
         form.addRow("Gemini model", self.gemini_model)
