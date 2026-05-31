@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mouseagent"
+version = "0.1.0"
+description = "A cursor-side AI companion for live desktop guidance."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PySide6>=6.7",
+    "pillow>=10.0",
+    "mss>=9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5",
+    "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["mouseagent*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
