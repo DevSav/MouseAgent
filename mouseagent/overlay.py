@@ -6,7 +6,9 @@ from PySide6.QtCore import QPoint, Qt, QTimer
 from PySide6.QtGui import QColor, QCursor, QPainter
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QDialog,
+    QFormLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -15,6 +17,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from mouseagent.settings import AppSettings
 
 
 APP_STYLE = """
@@ -45,6 +49,13 @@ QPushButton[variant="danger"] {
     background: rgba(255, 79, 117, 30);
     color: #ffd8e2;
     border: 1px solid rgba(255, 79, 117, 100);
+}
+QComboBox {
+    background: rgba(4, 12, 24, 220);
+    color: #f8fbff;
+    border: 1px solid rgba(48, 230, 255, 96);
+    border-radius: 10px;
+    padding: 8px 10px;
 }
 QLineEdit {
     background: rgba(4, 12, 24, 220);
@@ -207,8 +218,118 @@ class QuestionDialog(QDialog):
         return question or None
 
 
+class SettingsDialog(QDialog):
+    def __init__(self, settings: AppSettings) -> None:
+        super().__init__()
+        self.setWindowTitle("MouseAgent Settings")
+        self.setStyleSheet(APP_STYLE)
+        self.setModal(True)
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.Dialog
+            | Qt.WindowType.WindowStaysOnTopHint
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setFixedWidth(560)
+
+        surface = QWidget()
+        surface.setObjectName("surface")
+        surface.setStyleSheet(
+            """
+            QWidget#surface {
+                background: rgba(3, 10, 22, 238);
+                border: 1px solid rgba(48, 230, 255, 82);
+                border-radius: 18px;
+            }
+            """
+        )
+
+        title = QLabel("Settings")
+        title.setStyleSheet("font-size: 18px; font-weight: 600; color: #f8fbff;")
+
+        subtitle = QLabel("Choose how MouseAgent answers screen questions.")
+        subtitle.setStyleSheet("color: #8aa4c5;")
+
+        self.provider = QComboBox()
+        self.provider.addItem("Mock", "mock")
+        self.provider.addItem("Gemini", "gemini")
+        self.provider.addItem("Ollama", "ollama")
+        provider_index = self.provider.findData(settings.provider)
+        self.provider.setCurrentIndex(max(provider_index, 0))
+
+        self.gemini_api_key = QLineEdit(settings.gemini_api_key)
+        self.gemini_api_key.setEchoMode(QLineEdit.EchoMode.Password)
+        self.gemini_api_key.setPlaceholderText("Gemini API key")
+
+        self.gemini_model = QLineEdit(settings.gemini_model)
+        self.ollama_url = QLineEdit(settings.ollama_url)
+        self.ollama_model = QLineEdit(settings.ollama_model)
+
+        form = QFormLayout()
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        form.addRow("Provider", self.provider)
+        form.addRow("Gemini key", self.gemini_api_key)
+        form.addRow("Gemini model", self.gemini_model)
+        form.addRow("Ollama URL", self.ollama_url)
+        form.addRow("Ollama model", self.ollama_model)
+
+        save_button = QPushButton("Save")
+        save_button.setDefault(True)
+        save_button.clicked.connect(self.accept)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.setProperty("variant", "ghost")
+        cancel_button.clicked.connect(self.reject)
+
+        buttons = QHBoxLayout()
+        buttons.addStretch(1)
+        buttons.addWidget(cancel_button)
+        buttons.addWidget(save_button)
+
+        layout = QVBoxLayout(surface)
+        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setSpacing(12)
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+        layout.addLayout(form)
+        layout.addLayout(buttons)
+
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(surface)
+
+    def to_settings(self, previous: AppSettings) -> AppSettings:
+        return AppSettings(
+            provider=self.provider.currentData(),
+            shortcut=previous.shortcut,
+            voice_enabled=previous.voice_enabled,
+            gemini_api_key=self.gemini_api_key.text().strip(),
+            gemini_model=self.gemini_model.text().strip() or "gemini-2.5-flash",
+            ollama_url=self.ollama_url.text().strip() or "http://localhost:11434",
+            ollama_model=self.ollama_model.text().strip() or "llama3.2-vision",
+        )
+
+    @classmethod
+    def edit(cls, settings: AppSettings) -> AppSettings | None:
+        dialog = cls(settings)
+        screen = QApplication.primaryScreen()
+        if screen is not None:
+            area = screen.availableGeometry()
+            dialog.move(area.center() - QPoint(dialog.width() // 2, 180))
+
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+
+        return dialog.to_settings(settings)
+
+
 class AnswerWindow(QWidget):
-    def __init__(self, on_ask: Callable[[], None], on_quit: Callable[[], None]) -> None:
+    def __init__(
+        self,
+        on_ask: Callable[[], None],
+        on_settings: Callable[[], None],
+        on_quit: Callable[[], None],
+    ) -> None:
         super().__init__()
         self.setWindowTitle("MouseAgent")
         self.setStyleSheet(APP_STYLE)
@@ -259,6 +380,10 @@ class AnswerWindow(QWidget):
         ask_button = QPushButton("Ask again")
         ask_button.clicked.connect(on_ask)
 
+        settings_button = QPushButton("Settings")
+        settings_button.setProperty("variant", "ghost")
+        settings_button.clicked.connect(on_settings)
+
         hide_button = QPushButton("Hide")
         hide_button.setProperty("variant", "ghost")
         hide_button.clicked.connect(self.hide)
@@ -269,6 +394,7 @@ class AnswerWindow(QWidget):
 
         footer = QHBoxLayout()
         footer.addWidget(ask_button)
+        footer.addWidget(settings_button)
         footer.addStretch(1)
         footer.addWidget(hide_button)
         footer.addWidget(quit_button)

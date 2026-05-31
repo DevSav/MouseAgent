@@ -7,9 +7,10 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon
 
 from mouseagent.hotkeys import HotkeyController
-from mouseagent.overlay import AnswerWindow, CursorOverlay, QuestionDialog
-from mouseagent.providers.mock import MockProvider
+from mouseagent.overlay import AnswerWindow, CursorOverlay, QuestionDialog, SettingsDialog
+from mouseagent.providers.factory import build_provider
 from mouseagent.screen import ScreenCapture
+from mouseagent.settings import load_settings, save_settings
 
 
 class AppEvents(QObject):
@@ -25,11 +26,16 @@ class MouseAgentApp:
         self.events = AppEvents()
         self.events.activated.connect(self.handle_activation)
 
+        self.settings = load_settings()
         self.overlay = CursorOverlay()
         self.screen_capture = ScreenCapture()
-        self.provider = MockProvider()
+        self.provider = build_provider(self.settings)
         self.hotkeys = HotkeyController(on_activate=self.events.activated.emit)
-        self.answer_window = AnswerWindow(on_ask=self.events.activated.emit, on_quit=self.quit)
+        self.answer_window = AnswerWindow(
+            on_ask=self.events.activated.emit,
+            on_settings=self.open_settings,
+            on_quit=self.quit,
+        )
         self.tray = self._build_tray()
 
     def start(self) -> int:
@@ -48,10 +54,14 @@ class MouseAgentApp:
         ask_action = QAction("Ask now")
         ask_action.triggered.connect(self.events.activated.emit)
 
+        settings_action = QAction("Settings")
+        settings_action.triggered.connect(self.open_settings)
+
         quit_action = QAction("Quit")
         quit_action.triggered.connect(self.quit)
 
         menu.addAction(ask_action)
+        menu.addAction(settings_action)
         menu.addSeparator()
         menu.addAction(quit_action)
         tray.setContextMenu(menu)
@@ -81,6 +91,20 @@ class MouseAgentApp:
         )
         self.overlay.show_message("Ready")
         self.answer_window.show_answer(question=question, text=response)
+
+    def open_settings(self) -> None:
+        updated_settings = SettingsDialog.edit(self.settings)
+        if updated_settings is None:
+            return
+
+        self.settings = updated_settings
+        save_settings(self.settings)
+        self.provider = build_provider(self.settings)
+        self.overlay.show_message("Ready")
+        self.answer_window.show_answer(
+            question="Settings saved",
+            text=f"Provider: {self.settings.provider}\n\nPress Ctrl+Space to ask again.",
+        )
 
     def quit(self) -> None:
         self.hotkeys.stop()

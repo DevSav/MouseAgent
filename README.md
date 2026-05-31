@@ -54,6 +54,12 @@ Install dependencies:
 pip install -e .
 ```
 
+Or install from the dependency file:
+
+```powershell
+pip install -r requirements.txt
+```
+
 Run the app:
 
 ```powershell
