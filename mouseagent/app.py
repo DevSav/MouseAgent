@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, QTimer, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon
 
@@ -36,9 +36,9 @@ class MouseAgentApp:
     def start(self) -> int:
         self.overlay.show()
         self.overlay.show_message("Ready")
-        self.control_panel.show()
         self.tray.show()
         self.hotkeys.start()
+        QTimer.singleShot(0, self.control_panel.show)
         return self.qt_app.exec()
 
     def _build_tray(self) -> QSystemTrayIcon:
