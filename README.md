@@ -87,6 +87,7 @@ docs/
   ARCHITECTURE.md         # System design notes
   PRODUCT.md              # Product direction and user experience
   REQUIREMENTS.md         # MVP requirements and constraints
+  STATUS.md               # Current project state and next steps
 ```
 
 ## Important Principle
