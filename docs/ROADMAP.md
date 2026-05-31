@@ -25,6 +25,14 @@ Definition of done:
 - Pressing the shortcut opens a prompt or triggers a mock answer.
 - The app can be closed cleanly from the tray or terminal.
 
+Current MVP status:
+
+- Cursor-following overlay exists.
+- `Ctrl+Space` opens an ask dialog.
+- Primary screen capture runs after a question is submitted.
+- Mock provider returns guidance near the cursor.
+- Tray menu supports "Ask now" and "Quit".
+
 ## Phase 2: Screen Context
 
 Goal: let the assistant see what the user sees.
@@ -140,4 +148,3 @@ Both:
 - Product testing
 - Privacy decisions
 - UX decisions
-

@@ -59,6 +59,10 @@ Run the app:
 python -m mouseagent
 ```
 
+Press `Ctrl+Space` to ask a question. The current MVP captures the screen and returns a mock answer, which proves the desktop flow before real AI providers are added.
+
+MouseAgent also adds a tray icon. Right-click it to ask again or quit the app.
+
 ## Repository Layout
 
 ```text
@@ -82,4 +86,3 @@ docs/
 MouseAgent should guide, not take over.
 
 No automatic clicking, no hidden control, no surprise actions. The user should always understand what the assistant sees, what it suggests, and what happens next.
-

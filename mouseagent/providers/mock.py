@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from mouseagent.providers.base import AIProvider
 from mouseagent.screen import Screenshot
 
@@ -8,7 +10,7 @@ class MockProvider(AIProvider):
             return f"Mock answer: {question}"
 
         return (
-            "I can see your screen context placeholder. Next step: connect a real AI "
-            "provider and pass this screenshot with your question."
+            f"You asked: {question}\n\n"
+            "MVP mock guidance: I captured your screen. Next we will connect a real AI "
+            "provider so this answer can use the screenshot."
         )
-
