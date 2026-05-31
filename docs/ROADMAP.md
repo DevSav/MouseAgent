@@ -23,15 +23,16 @@ Definition of done:
 
 - Running the app shows a small icon near the cursor.
 - Pressing the shortcut opens a prompt or triggers a mock answer.
-- The app can be closed cleanly from the tray or terminal.
+- The app can be closed cleanly from the visible control panel, tray, or terminal.
 
 Current MVP status:
 
 - Cursor-following overlay exists.
 - `Ctrl+Space` opens an ask dialog.
 - Primary screen capture runs after a question is submitted.
-- Mock provider returns guidance near the cursor.
-- Tray menu supports "Ask now" and "Quit".
+- Mock provider returns guidance in a fixed answer popup.
+- Visible control panel supports "Ask" and "Quit".
+- Tray menu supports "Ask now" and "Quit" when the tray icon is available.
 
 ## Phase 2: Screen Context
 

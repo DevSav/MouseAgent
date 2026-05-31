@@ -7,7 +7,7 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon
 
 from mouseagent.hotkeys import HotkeyController
-from mouseagent.overlay import CursorOverlay, QuestionDialog
+from mouseagent.overlay import AnswerWindow, ControlPanel, CursorOverlay, QuestionDialog
 from mouseagent.providers.mock import MockProvider
 from mouseagent.screen import ScreenCapture
 
@@ -29,11 +29,14 @@ class MouseAgentApp:
         self.screen_capture = ScreenCapture()
         self.provider = MockProvider()
         self.hotkeys = HotkeyController(on_activate=self.events.activated.emit)
+        self.answer_window = AnswerWindow(on_ask=self.events.activated.emit, on_quit=self.quit)
+        self.control_panel = ControlPanel(on_ask=self.events.activated.emit, on_quit=self.quit)
         self.tray = self._build_tray()
 
     def start(self) -> int:
         self.overlay.show()
-        self.overlay.show_message("Ready. Press Ctrl+Space to ask.")
+        self.overlay.show_message("Ready")
+        self.control_panel.show()
         self.tray.show()
         self.hotkeys.start()
         return self.qt_app.exec()
@@ -64,23 +67,29 @@ class MouseAgentApp:
     def handle_activation(self) -> None:
         question = QuestionDialog.ask()
         if not question:
-            self.overlay.show_message("Ready. Press Ctrl+Space to ask.")
+            self.overlay.show_message("Ready")
             return
 
         self.overlay.hide()
+        self.answer_window.hide()
         self.qt_app.processEvents()
         screenshot = self.screen_capture.capture_primary_screen()
-        self.overlay.show_message("Thinking...")
+        self.overlay.show()
+        self.overlay.show_message("Thinking")
 
         response = self.provider.ask(
             question=question,
             screenshot=screenshot,
         )
-        self.overlay.show_message(response)
+        self.overlay.show_message("Ready")
+        self.answer_window.show_answer(response)
 
     def quit(self) -> None:
         self.hotkeys.stop()
         self.tray.hide()
+        self.answer_window.hide()
+        self.control_panel.hide()
+        self.overlay.hide()
         self.qt_app.quit()
 
 

@@ -6,7 +6,7 @@ The first goal is not to control the mouse. The app should observe context, answ
 
 ## Product Idea
 
-You press a shortcut, ask a question, and MouseAgent captures the current screen context. It sends the screenshot and your question to an AI provider you configure, then shows a small answer bubble near your cursor.
+You press a shortcut, ask a question, and MouseAgent captures the current screen context. It sends the screenshot and your question to an AI provider you configure, then shows the answer in a fixed popup while the small companion stays beside your cursor.
 
 Example:
 
@@ -20,19 +20,21 @@ Later versions can add voice guidance and on-screen arrows or highlights.
 
 ## Current Skeleton
 
-This repo starts with a minimal Python desktop app structure:
+This repo starts with a minimal Python desktop MVP:
 
 - cursor-following overlay window
-- placeholder hotkey flow
+- global shortcut ask flow
+- fixed answer popup
+- visible ask/quit control panel
 - provider abstraction for future OpenAI / Anthropic / other APIs
-- screen capture service placeholder
+- screen capture service
 - docs for roadmap and architecture
 
 ## Tech Stack
 
 Planned MVP stack:
 
-- Python 3.11+
+- Python 3.9+
 - PySide6 for the desktop overlay
 - Pillow / mss for screen capture
 - pynput or keyboard for global shortcuts
@@ -59,9 +61,9 @@ Run the app:
 python -m mouseagent
 ```
 
-Press `Ctrl+Space` to ask a question. The current MVP captures the screen and returns a mock answer, which proves the desktop flow before real AI providers are added.
+Press `Ctrl+Space` to ask a question. The current MVP captures the screen and returns a mock answer in a fixed popup, which proves the desktop flow before real AI providers are added.
 
-MouseAgent also adds a tray icon. Right-click it to ask again or quit the app.
+MouseAgent also shows a small control panel with `Ask` and `Quit`. If your system tray is visible, the tray icon also has ask and quit actions.
 
 ## Repository Layout
 
