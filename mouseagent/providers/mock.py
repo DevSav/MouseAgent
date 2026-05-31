@@ -10,7 +10,11 @@ class MockProvider(AIProvider):
             return f"Mock answer: {question}"
 
         return (
-            f"You asked: {question}\n\n"
-            "MVP mock guidance: I captured your screen. Next we will connect a real AI "
-            "provider so this answer can use the screenshot."
+            "I captured your screen and received your question.\n\n"
+            "Suggested next steps:\n"
+            "1. Confirm the visible app and task are correct.\n"
+            "2. Connect Gemini or Ollama so MouseAgent can analyze the screenshot.\n"
+            "3. Replace this mock response with model-generated guidance.\n\n"
+            f"Screenshot size: {screenshot.width} x {screenshot.height}\n"
+            f"Question: {question}"
         )

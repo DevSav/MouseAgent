@@ -36,6 +36,7 @@ class MouseAgentApp:
     def start(self) -> int:
         self.overlay.show()
         self.overlay.show_message("Ready")
+        self.control_panel.set_status("Ready")
         self.tray.show()
         self.hotkeys.start()
         QTimer.singleShot(0, self.control_panel.show)
@@ -68,21 +69,26 @@ class MouseAgentApp:
         question = QuestionDialog.ask()
         if not question:
             self.overlay.show_message("Ready")
+            self.control_panel.set_status("Ready")
             return
 
         self.overlay.hide()
         self.answer_window.hide()
+        self.control_panel.hide()
         self.qt_app.processEvents()
         screenshot = self.screen_capture.capture_primary_screen()
         self.overlay.show()
         self.overlay.show_message("Thinking")
+        self.control_panel.show()
+        self.control_panel.set_status("Thinking")
 
         response = self.provider.ask(
             question=question,
             screenshot=screenshot,
         )
         self.overlay.show_message("Ready")
-        self.answer_window.show_answer(response)
+        self.control_panel.set_status("Ready")
+        self.answer_window.show_answer(question=question, text=response)
 
     def quit(self) -> None:
         self.hotkeys.stop()
