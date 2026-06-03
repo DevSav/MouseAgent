@@ -6,6 +6,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon
 
+from mouseagent.debug import debug_log
 from mouseagent.hotkeys import HotkeyController
 from mouseagent.overlay import AnswerWindow, CursorOverlay, QuestionDialog, SettingsDialog
 from mouseagent.providers.factory import build_provider
@@ -27,6 +28,12 @@ class MouseAgentApp:
         self.events.activated.connect(self.handle_activation)
 
         self.settings = load_settings()
+        debug_log(
+            "startup: "
+            f"provider={self.settings.provider}, "
+            f"gemini_model={self.settings.gemini_model}, "
+            f"ollama_model={self.settings.ollama_model}"
+        )
         self.overlay = CursorOverlay()
         self.screen_capture = ScreenCapture()
         self.provider = build_provider(self.settings)
@@ -39,6 +46,7 @@ class MouseAgentApp:
         self.tray = self._build_tray()
 
     def start(self) -> int:
+        debug_log("app: starting event loop")
         self.overlay.show()
         self.overlay.show_message("Ready")
         self.tray.show()
@@ -69,31 +77,48 @@ class MouseAgentApp:
         return tray
 
     def handle_tray_activation(self, reason: QSystemTrayIcon.ActivationReason) -> None:
+        debug_log(f"tray: activated reason={reason}")
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
             self.events.activated.emit()
 
     def handle_activation(self) -> None:
+        debug_log("activation: shortcut/menu triggered")
         # Capture active window before the dialog steals focus
         active_hwnd = self.screen_capture.get_foreground_hwnd()
         window_info = self.screen_capture.get_window_info(active_hwnd)
+        debug_log(
+            "active-window: "
+            f"hwnd={active_hwnd}, "
+            f"app={window_info.app_name}, "
+            f"title={window_info.window_title!r}"
+        )
 
         question = QuestionDialog.ask()
         if not question:
+            debug_log("activation: cancelled or empty question")
             self.overlay.show_message("Ready")
             return
+        debug_log(f"question: {question!r}")
 
         self.overlay.hide()
         self.answer_window.hide()
         self.qt_app.processEvents()
         screenshot = self.screen_capture.capture_window(active_hwnd)
+        debug_log(
+            "screenshot: "
+            f"width={screenshot.width}, height={screenshot.height}, "
+            f"target_app={window_info.app_name}"
+        )
         self.overlay.show()
         self.overlay.show_message("Thinking")
 
+        debug_log(f"provider: asking {type(self.provider).__name__}")
         response = self.provider.ask(
             question=question,
             screenshot=screenshot,
             window_info=window_info,
         )
+        debug_log(f"provider: response_chars={len(response)}")
         self.overlay.show_message("Ready")
         self.answer_window.show_answer(
             question=question,
@@ -102,13 +127,22 @@ class MouseAgentApp:
         )
 
     def open_settings(self) -> None:
+        debug_log("settings: opened")
         updated_settings = SettingsDialog.edit(self.settings)
         if updated_settings is None:
+            debug_log("settings: cancelled")
             return
 
         self.settings = updated_settings
         save_settings(self.settings)
         self.provider = build_provider(self.settings)
+        debug_log(
+            "settings: saved "
+            f"provider={self.settings.provider}, "
+            f"gemini_model={self.settings.gemini_model}, "
+            f"ollama_url={self.settings.ollama_url}, "
+            f"ollama_model={self.settings.ollama_model}"
+        )
         self.overlay.show_message("Ready")
         self.answer_window.show_answer(
             question="Settings saved",
@@ -116,6 +150,7 @@ class MouseAgentApp:
         )
 
     def quit(self) -> None:
+        debug_log("app: quitting")
         self.hotkeys.stop()
         self.tray.hide()
         self.answer_window.hide()
