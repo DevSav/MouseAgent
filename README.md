@@ -72,6 +72,14 @@ Or double-click:
 run_mouseagent.cmd
 ```
 
+Install a Windows keyboard shortcut to run the app:
+
+```text
+install_run_hotkey.cmd
+```
+
+After installing it, press `Ctrl+Alt+M` to start MouseAgent.
+
 Stop the app:
 
 ```text
@@ -103,8 +111,10 @@ docs/
 scripts/
   run_mouseagent.ps1       # Starts the app from the repo root
   stop_mouseagent.ps1      # Stops MouseAgent Python processes
+  install_run_hotkey.ps1   # Creates a Desktop shortcut with Ctrl+Alt+M
 run_mouseagent.cmd         # Double-click launcher
 stop_mouseagent.cmd        # Double-click stopper
+install_run_hotkey.cmd     # Installs the Ctrl+Alt+M launcher shortcut
 ```
 
 ## Important Principle
