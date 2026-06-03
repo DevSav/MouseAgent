@@ -66,6 +66,18 @@ Run the app:
 python -m mouseagent
 ```
 
+Or double-click:
+
+```text
+run_mouseagent.cmd
+```
+
+Stop the app:
+
+```text
+stop_mouseagent.cmd
+```
+
 Press `Ctrl+Space` to ask a question. The current MVP captures the screen and returns a mock answer in a fixed popup, which proves the desktop flow before real AI providers are added.
 
 The answer popup includes `Ask again`, `Hide`, and `Quit`. If your system tray is visible, the tray icon also has ask and quit actions.
@@ -88,6 +100,11 @@ docs/
   PRODUCT.md              # Product direction and user experience
   REQUIREMENTS.md         # MVP requirements and constraints
   STATUS.md               # Current project state and next steps
+scripts/
+  run_mouseagent.ps1       # Starts the app from the repo root
+  stop_mouseagent.ps1      # Stops MouseAgent Python processes
+run_mouseagent.cmd         # Double-click launcher
+stop_mouseagent.cmd        # Double-click stopper
 ```
 
 ## Important Principle
