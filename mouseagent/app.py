@@ -73,6 +73,10 @@ class MouseAgentApp:
             self.events.activated.emit()
 
     def handle_activation(self) -> None:
+        # Capture active window before the dialog steals focus
+        active_hwnd = self.screen_capture.get_foreground_hwnd()
+        window_info = self.screen_capture.get_window_info(active_hwnd)
+
         question = QuestionDialog.ask()
         if not question:
             self.overlay.show_message("Ready")
@@ -81,16 +85,21 @@ class MouseAgentApp:
         self.overlay.hide()
         self.answer_window.hide()
         self.qt_app.processEvents()
-        screenshot = self.screen_capture.capture_primary_screen()
+        screenshot = self.screen_capture.capture_window(active_hwnd)
         self.overlay.show()
         self.overlay.show_message("Thinking")
 
         response = self.provider.ask(
             question=question,
             screenshot=screenshot,
+            window_info=window_info,
         )
         self.overlay.show_message("Ready")
-        self.answer_window.show_answer(question=question, text=response)
+        self.answer_window.show_answer(
+            question=question,
+            text=response,
+            app_name=window_info.app_name,
+        )
 
     def open_settings(self) -> None:
         updated_settings = SettingsDialog.edit(self.settings)
@@ -103,7 +112,7 @@ class MouseAgentApp:
         self.overlay.show_message("Ready")
         self.answer_window.show_answer(
             question="Settings saved",
-            text=f"Provider: {self.settings.provider}\n\nPress Ctrl+Space to ask again.",
+            text=f"Provider: **{self.settings.provider}**\n\nPress Ctrl+Space to ask again.",
         )
 
     def quit(self) -> None:

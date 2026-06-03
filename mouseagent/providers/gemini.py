@@ -7,7 +7,7 @@ from urllib.request import Request, urlopen
 
 from mouseagent.providers.base import AIProvider
 from mouseagent.providers.image import screenshot_to_jpeg_base64
-from mouseagent.screen import Screenshot
+from mouseagent.screen import Screenshot, WindowInfo
 
 
 class GeminiProvider(AIProvider):
@@ -15,19 +15,32 @@ class GeminiProvider(AIProvider):
         self.api_key = api_key.strip()
         self.model = model.strip() or "gemini-2.5-flash"
 
-    def ask(self, question: str, screenshot: Screenshot | None = None) -> str:
+    def ask(
+        self,
+        question: str,
+        screenshot: Screenshot | None = None,
+        window_info: WindowInfo | None = None,
+    ) -> str:
         if not self.api_key:
             return "Gemini is selected, but no API key is saved. Open Settings and add one."
 
-        parts = [
-            {
-                "text": (
-                    "You are MouseAgent, a concise screen guidance assistant. "
-                    "Tell the user what to do next. Do not suggest automatic clicking.\n\n"
-                    f"User question: {question}"
-                )
-            }
-        ]
+        app_context = (
+            f"The user is currently in {window_info.app_name}"
+            + (f' ("{window_info.window_title}")' if window_info.window_title else "")
+            + "."
+            if window_info
+            else ""
+        )
+
+        system = (
+            "You are MouseAgent, a concise screen guidance assistant for Windows. "
+            f"{app_context} "
+            "When multiple actions are needed, respond with a numbered list — one short step per line. "
+            "For simple questions, answer in one or two sentences. "
+            "Never suggest automatic clicking or taking control of the user's computer."
+        ).strip()
+
+        parts = [{"text": f"{system}\n\nUser question: {question}"}]
 
         if screenshot is not None:
             parts.append(

@@ -412,9 +412,10 @@ class AnswerWindow(QWidget):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.addWidget(surface)
 
-    def show_answer(self, question: str, text: str) -> None:
-        self.question.setText(question)
-        self.answer.setPlainText(text)
+    def show_answer(self, question: str, text: str, app_name: str = "") -> None:
+        label = f"[{app_name}]  {question}" if app_name and app_name != "unknown" else question
+        self.question.setText(label)
+        self.answer.setMarkdown(text)
         self._move_to_default_position()
         self.show()
         self.raise_()
