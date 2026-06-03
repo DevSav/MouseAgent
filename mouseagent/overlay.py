@@ -92,6 +92,30 @@ QTextEdit {
 """
 
 
+def move_inside_screen(widget: QWidget, preferred: QPoint, margin: int = 16) -> None:
+    screen = QApplication.screenAt(preferred) or QApplication.primaryScreen()
+    if screen is None:
+        widget.move(preferred)
+        return
+
+    area = screen.availableGeometry()
+    size = widget.sizeHint()
+    if not size.isValid() or size.width() <= 0 or size.height() <= 0:
+        size = widget.size()
+
+    width = max(size.width(), widget.width())
+    height = max(size.height(), widget.height())
+
+    min_x = area.left() + margin
+    min_y = area.top() + margin
+    max_x = area.right() - width - margin + 1
+    max_y = area.bottom() - height - margin + 1
+
+    x = max(min_x, min(preferred.x(), max_x))
+    y = max(min_y, min(preferred.y(), max_y))
+    widget.move(x, y)
+
+
 class CursorOverlay(QWidget):
     def __init__(self) -> None:
         super().__init__()
@@ -204,7 +228,7 @@ class QuestionDialog(QDialog):
     @classmethod
     def ask(cls) -> str | None:
         dialog = cls()
-        dialog.move(QCursor.pos() + QPoint(24, 24))
+        move_inside_screen(dialog, QCursor.pos() + QPoint(24, 24))
 
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return None
@@ -317,7 +341,7 @@ class SettingsDialog(QDialog):
         screen = QApplication.primaryScreen()
         if screen is not None:
             area = screen.availableGeometry()
-            dialog.move(area.center() - QPoint(dialog.width() // 2, 180))
+            move_inside_screen(dialog, area.center() - QPoint(dialog.width() // 2, 180))
 
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return None
@@ -430,4 +454,4 @@ class AnswerWindow(QWidget):
         margin = 28
         x = area.right() - self.width() - margin
         y = area.top() + margin
-        self.move(x, y)
+        move_inside_screen(self, QPoint(x, y), margin=margin)
